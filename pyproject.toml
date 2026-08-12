@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Redistribution of RLWRLD/RLDX-1 @ cf67c31. Import name is unchanged.
 name = "rlinf-rldx"
-version = "1.0.1.post8"
+version = "1.0.1.post9"
 description = "RLDX-1: Vision-Language-Action model for dexterous manipulation (RLinf redistribution)."
 readme = "README.md"
 requires-python = "==3.10.*"
@@ -40,7 +40,8 @@ dependencies = [
     "msgpack-numpy==0.4.8",
     "pandas==2.2.3",
     "peft==0.17.1",
-    "termcolor==3.2.0",
+    # Only `from termcolor import colored` is used; stable across 2.x/3.x.
+    "termcolor>=2.4",
     # Floors, not pins: upstream pinned torch==2.7.0 / torchvision==0.22.0
     # exactly, which blocked co-installation with anything on a different
     # patch. No rldx module uses a torch API removed since 2.7.
@@ -60,7 +61,10 @@ dependencies = [
     # requires >=4.0.
     "datasets>=3.6",
     "einops==0.8.1",
-    "gymnasium==1.2.2",
+    # Floor only. rldx uses Env, spaces and envs.registration.register,
+    # all stable since 0.29; pinning 1.2.2 blocked the lerobot releases
+    # that rlinf-openpi's numpy<2 cap forces the resolver onto.
+    "gymnasium>=0.29.1",
     "matplotlib==3.10.1",
     # Floor, not a pin: no rldx module uses a numpy-1-only API, so the
     # major is left to whatever else is in the environment.
