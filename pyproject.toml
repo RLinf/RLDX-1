@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Redistribution of RLWRLD/RLDX-1 @ cf67c31. Import name is unchanged.
 name = "rlinf-rldx"
-dynamic = ["version"]
+version = "1.0.1.post1"
 description = "RLDX-1: Vision-Language-Action model for dexterous manipulation (RLinf redistribution)."
 readme = "README.md"
 requires-python = "==3.10.*"
@@ -45,12 +45,6 @@ dependencies = [
     "torchvision==0.22.0",
     "transformers==4.57.0",
     "tyro==0.9.17",
-    # flash-attn is a required runtime dep on every CUDA install. CPU-only
-    # boxes that need to ``uv sync`` (lint, doc) must use
-    # ``uv sync --no-install-package flash-attn`` (the same flag CI uses).
-    # RTX 5090 / Blackwell (sm_120) builds use the pixi environment instead
-    # — see ``pixi.toml`` and ``docs/installation.md``.
-    "flash-attn==2.7.4.post1",
     "click==8.1.8",
     "datasets==3.6.0",
     "einops==0.8.1",
@@ -81,6 +75,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# PyPI ships flash-attn as an sdist only, so requiring it forces a 10-20 min
+# nvcc build on every install. RLDX falls back to sdpa when it is absent.
+flash-attn = ["flash-attn==2.7.4.post1"]
 dev = [
     "ruff",
     "ipython",
@@ -110,9 +107,6 @@ tensorrt = [
 Homepage = "https://rlwrld.ai/rldx-1"
 Repository = "https://github.com/RLWRLD/RLDX"
 Issues = "https://github.com/RLWRLD/RLDX/issues"
-
-[tool.setuptools.dynamic]
-version = {attr = "rldx.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
