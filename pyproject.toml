@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Redistribution of RLWRLD/RLDX-1 @ cf67c31. Import name is unchanged.
 name = "rlinf-rldx"
-version = "1.0.1.post1"
+version = "1.0.1.post2"
 description = "RLDX-1: Vision-Language-Action model for dexterous manipulation (RLinf redistribution)."
 readme = "README.md"
 requires-python = "==3.10.*"
@@ -41,8 +41,11 @@ dependencies = [
     "pandas==2.2.3",
     "peft==0.17.1",
     "termcolor==3.2.0",
-    "torch==2.7.0",
-    "torchvision==0.22.0",
+    # Relaxed from upstream's ==2.7.0 so RLDX-1 can co-install with
+    # rlinf-openpi, which pins torch==2.7.1. torchvision moves in
+    # lockstep (0.22.0 requires torch 2.7.0 exactly).
+    "torch>=2.7.0,<2.8",
+    "torchvision>=0.22.0,<0.23",
     "transformers==4.57.0",
     "tyro==0.9.17",
     "click==8.1.8",
