@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Redistribution of RLWRLD/RLDX-1 @ cf67c31. Import name is unchanged.
 name = "rlinf-rldx"
-version = "1.0.1.post9"
+version = "1.0.1.post10"
 description = "RLDX-1: Vision-Language-Action model for dexterous manipulation (RLinf redistribution)."
 readme = "README.md"
 requires-python = "==3.10.*"
@@ -47,13 +47,11 @@ dependencies = [
     # patch. No rldx module uses a torch API removed since 2.7.
     "torch>=2.7",
     "torchvision>=0.22",
-    # Provides the `transformers` module. This is the fork rlinf-openpi
-    # pins, so depending on it here means one provider instead of two
-    # distributions writing the same package. rldx only uses APIs present
-    # in it (create_causal_mask, GradientCheckpointingLayer,
-    # use_kernel_forward_from_hub, str_to_torch_dtype,
-    # ALL_ATTENTION_FUNCTIONS, dynamic_rope_update, DynamicCache).
-    "rlinf-transformer-openpi>=4.53.2",
+    # 4.57 is a hard floor: the model backbone imports
+    # transformers.models.qwen3_vl, which first appears there. It is also
+    # why rldx cannot use rlinf-openpi's transformers fork (4.53-based).
+    # 4.57.0 itself is yanked on PyPI.
+    "transformers>=4.57.1,<4.58",
     "tyro==0.9.17",
     "click==8.1.8",
     # Floor, not a pin: rldx never imports datasets directly (it arrives
