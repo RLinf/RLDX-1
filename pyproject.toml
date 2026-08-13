@@ -34,12 +34,6 @@ dependencies = [
     "torchvision==0.22.0",
     "transformers==4.57.0",
     "peft==0.17.1",
-    # flash-attn is a required runtime dep on every CUDA install. CPU-only
-    # boxes that need to ``uv sync`` (lint, doc) must use
-    # ``uv sync --no-install-package flash-attn`` (the same flag CI uses).
-    # RTX 5090 / Blackwell (sm_120) builds use the pixi environment instead
-    # — see ``pixi.toml`` and ``docs/installation.md``.
-    "flash-attn==2.7.4.post1",
     "albumentations>=1.4.18",
     "av>=15.0.0",
     "diffusers==0.35.1",
