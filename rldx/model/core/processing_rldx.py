@@ -776,6 +776,10 @@ class RLDXProcessor(BaseProcessor):
                     override = kwargs.pop(key)
                     if override is not None:
                         processor_kwargs[key] = override
+        # Some released processor configs serialize required image geometry as null.
+        for key in ("image_max_area", "image_resize_m"):
+            if key in processor_kwargs and processor_kwargs[key] is None:
+                del processor_kwargs[key]
         return cls(**processor_kwargs, transformers_loading_kwargs=transformers_loading_kwargs)
 
 
