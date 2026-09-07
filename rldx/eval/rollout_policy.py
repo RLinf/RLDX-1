@@ -736,10 +736,19 @@ def create_rldx_sim_policy(
     embodiment_tag: EmbodimentTag,
     policy_client_host: str = "",
     policy_client_port: int | None = None,
+    *,
+    backbone_revision: str | None = None,
 ) -> BasePolicy:
+    """Create a policy with an optional revision for backbone support files.
+
+    This revision is independent of the finetuned checkpoint. For a remote
+    policy client, configure it on the server instead.
+    """
     from rldx.policy.rldx_policy import RLDXPolicy, RLDXSimPolicyWrapper
 
     if policy_client_host and policy_client_port:
+        if backbone_revision is not None:
+            raise ValueError("backbone_revision must be configured on the policy server")
         from rldx.policy.server_client import PolicyClient
 
         policy = PolicyClient(host=policy_client_host, port=policy_client_port)
@@ -749,6 +758,7 @@ def create_rldx_sim_policy(
                 embodiment_tag=embodiment_tag,
                 model_path=model_path,
                 device=0,
+                backbone_revision=backbone_revision,
             )
         )
     return policy

@@ -292,6 +292,22 @@ policy = RLDXPolicy(
 action = policy.get_action(observation)
 ```
 
+### Pinning Backbone Support Files
+
+A finetuned checkpoint can contain all weights while still referring to a
+backbone Hub repository for its config and tokenizer. Pass the optional
+`backbone_revision` to `RLDXPolicy` or `create_rldx_sim_policy` to pin those
+support files independently of the checkpoint revision. The default `None`
+preserves normal Hub resolution. A remote policy client must configure the
+revision on its server instead.
+
+For example, RoboCasa365 uses `RLWRLD/RLDX-1-VLM` support files at
+`4b9f870d1287e0d38d7eb1445e6d8c60afe66dd7`. Download the non-weight files
+into the same Hugging Face cache used by the policy process before setting
+`HF_HUB_OFFLINE=1`. The explicit revision works without a cached `main` ref;
+it does not select the finetuned checkpoint revision or download another
+set of backbone weights when loading a complete finetuned checkpoint.
+
 ### Serving (ZeroMQ)
 
 For real-time robot deployment:
