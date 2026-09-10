@@ -102,6 +102,7 @@ class PolicyLoader:
         embodiment_tag: EmbodimentTag,
         model_path: str,
         device: int | str,
+        backbone_revision: str | None = None,
         deactivate_memory: bool = False,
         sample_timestep_from_beta_dist: bool = False,
         denoising_timesteps: list[float] | None = None,
@@ -109,10 +110,10 @@ class PolicyLoader:
     ) -> LoaderResult:
         """Full load pipeline. See module docstring for phase summary."""
         model_dir = _resolve_model_dir(model_path)
-        model = _load_model(model_dir, device, deactivate_memory)
+        model = _load_model(model_dir, device, deactivate_memory, backbone_revision)
         _apply_model_tweaks(model, sample_timestep_from_beta_dist, denoising_timesteps)
 
-        processor = _load_processor(model_dir, model)
+        processor = _load_processor(model_dir, model, backbone_revision)
 
         modality_configs = processor.get_modality_configs()[embodiment_tag.value]
         collate_fn = processor.collator
@@ -160,6 +161,7 @@ def _load_model(
     model_dir: Path,
     device: int | str,
     deactivate_memory: bool,
+    backbone_revision: str | None = None,
 ) -> Any:
     """Load model + optionally disable memory inference; return in eval mode."""
     config = AutoConfig.from_pretrained(model_dir, trust_remote_code=True)
@@ -169,7 +171,12 @@ def _load_model(
         config.use_memory = False
         config.concat_memory = False
 
-    model = AutoModel.from_pretrained(model_dir, device_map=device, torch_dtype=torch.bfloat16)
+    loading_kwargs = {}
+    if backbone_revision is not None:
+        loading_kwargs["transformers_loading_kwargs"] = {"revision": backbone_revision}
+    model = AutoModel.from_pretrained(
+        model_dir, device_map=device, torch_dtype=torch.bfloat16, **loading_kwargs
+    )
     model.eval()
     return model
 
@@ -188,11 +195,19 @@ def _apply_model_tweaks(
         print(f"[Policy] Set fixed denoising timesteps: {denoising_timesteps}")
 
 
-def _load_processor(model_dir: Path, model: Any) -> BaseProcessor:
+def _load_processor(
+    model_dir: Path, model: Any, backbone_revision: str | None = None
+) -> BaseProcessor:
     """Load processor (subdir-aware) + inject physics config + image-first flag."""
     _processor_subdir = model_dir / "processor"
     _processor_path = _processor_subdir if _processor_subdir.exists() else model_dir
-    processor: BaseProcessor = AutoProcessor.from_pretrained(_processor_path)
+    loading_kwargs = {}
+    if backbone_revision is not None:
+        loading_kwargs["transformers_loading_kwargs"] = {
+            "revision": backbone_revision,
+            "trust_remote_code": True,
+        }
+    processor: BaseProcessor = AutoProcessor.from_pretrained(_processor_path, **loading_kwargs)
 
     # Fallback: inject physics config from model config if processor lacks it
     if not processor.physics_keys and getattr(model.config, "physics_keys", None):
